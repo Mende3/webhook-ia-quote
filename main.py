@@ -1,14 +1,18 @@
 import os
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/webhookcallback", methods=["POST"])
+@app.route("/webhookcallback/", methods=["POST", "OPTIONS"])
 def hook():
-    print(request.data)
-    return "Hello world", 200
+    if request.method == "OPTIONS":
+        return jsonify({"status": "preflight ok"}), 200
+    
+    data = request.json
+    print("recebi:", data)
+    return jsonify({"status": "ok"}), 200
 
 @app.route("/") 
 def home():
