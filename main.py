@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
@@ -10,7 +10,7 @@ def hook():
 
 @app.route("/")  # Rota básica para testar se está vivo
 def home():
-    return "API Flask no Render está rodando!"
+    return render_template("index.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Render define a porta

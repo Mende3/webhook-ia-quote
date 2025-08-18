@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Flask - Sistema Matrix</title>
+    <meta name="description" content="Sistema de webhook rodando em Flask com interface futurista">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000000;
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Matrix Rain Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        .matrix-char {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #00ff00;
+            animation: matrix-rain 3s linear infinite;
+        }
+
+        @keyframes matrix-rain {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        /* Main Content */
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: clamp(3rem, 8vw, 8rem);
+            font-weight: bold;
+            color: #00ff00;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 5px #00ff00;
+            }
+            100% {
+                text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+            }
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            color: #00aa00;
+            margin-bottom: 2rem;
+        }
+
+        .flask-text {
+            color: #00ff00;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Status Badge */
+        .status-badge {
+            position: relative;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 50px;
+            padding: 1rem 2rem;
+            margin: 2rem 0;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .status-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        .status-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 0 30px rgba(0, 255, 0, 0.4);
+            }
+        }
+
+        /* Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
+            width: 100%;
+            margin: 3rem 0;
+        }
+
+        .info-card {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .card-label {
+            font-size: 0.9rem;
+            color: #00aa00;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 1.3rem;
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            color: #006600;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .status-content {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Gradient Overlay */
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.5) 50%, #000000 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <div class="matrix-bg" id="matrixBg"></div>
+    
+    <!-- Gradient Overlay -->
+    <div class="gradient-overlay"></div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div>
+            <h1 class="main-title">WEBHOOK</h1>
+            <div class="subtitle">
+                rodando em <span class="flask-text">Flask</span>
+            </div>
+        </div>
+
+        <div class="status-badge">
+            <div class="status-content">
+                <div class="status-dot"></div>
+                <span class="status-text">WEBHOOK ATIVO</span>
+                <div class="status-dot"></div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="card-label">STATUS</div>
+                <div class="card-value">ONLINE</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-label">SERVIDOR</div>
+                <div class="card-value">FLASK</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-label">PROTOCOLO</div>
+                <div class="card-value">HTTP</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            &gt; Sistema inicializado com sucesso
+        </div>
+    </div>
+
+    <script>
+        // Matrix Rain Effect
+        function createMatrixRain() {
+            const matrixBg = document.getElementById('matrixBg');
+            const chars = '01';
+            const columns = Math.floor(window.innerWidth / 20);
+            
+            // Clear existing characters
+            matrixBg.innerHTML = '';
+            
+            for (let i = 0; i < 50; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * 100 + '%';
+                char.style.animationDelay = Math.random() * 3 + 's';
+                char.style.animationDuration = (3 / (0.5 + Math.random() * 1.5)) + 's';
+                matrixBg.appendChild(char);
+            }
+        }
+
+        // Initialize matrix rain
+        createMatrixRain();
+
+        // Recreate matrix rain periodically for variety
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                createMatrixRain();
+            }
+        }, 5000);
+
+        // Handle window resize
+        window.addEventListener('resize', createMatrixRain);
+
+        // Add some interactive effects
+        document.addEventListener('click', function(e) {
+            // Create a temporary glow effect at click position
+            const glow = document.createElement('div');
+            glow.style.position = 'fixed';
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+            glow.style.width = '20px';
+            glow.style.height = '20px';
+            glow.style.background = 'radial-gradient(circle, #00ff00 0%, transparent 70%)';
+            glow.style.borderRadius = '50%';
+            glow.style.pointerEvents = 'none';
+            glow.style.zIndex = '1000';
+            glow.style.animation = 'glow 0.5s ease-out forwards';
+            document.body.appendChild(glow);
+            
+            setTimeout(() => {
+                document.body.removeChild(glow);
+            }, 500);
+        });
+
+        // Update timestamp every second
+        function updateTimestamp() {
+            const now = new Date();
+            const timestamp = now.toLocaleString('pt-BR');
+            document.title = `Webhook Flask - ${timestamp}`;
+        }
+
+        setInterval(updateTimestamp, 1000);
+        updateTimestamp();
+    </script>
+</body>
+</html>
