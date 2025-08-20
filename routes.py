@@ -15,6 +15,7 @@ def webhook_callback() :
     lista_dados = gen_data_json ()
     if file_path.exists():
         file_path.unlink()
-    resposta_cotaçao = gen_quote_ia (resp=lista_dados[3])
+    print (lista_dados)
+   # resposta_cotaçao = gen_quote_ia (resp=lista_dados[3])
 
     return jsonify({"status": "ok"}), 200
