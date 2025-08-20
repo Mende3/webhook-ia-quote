@@ -13,6 +13,6 @@ token = os.getenv('TOKEN_AI_API')
 # Inicializa o cliente
 client = ChatCompletionsClient(
     endpoint=endpoint,
-    credential=AzureKeyCredential(token),
+    credential=AzureKeyCredential(str(token)),
     model=model
 )
