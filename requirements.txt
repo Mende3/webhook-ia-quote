@@ -2,4 +2,7 @@ flask
 flask-cors
 gunicorn
 python-dotenv
+pandas
+openpyxl
+ipython
 azure-ai-inference==1.0.0b9
