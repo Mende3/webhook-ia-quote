@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from utils import process_data, gen_data_json, gen_quote_ia
 from pathlib import Path
+import requests
 
 webhook_bp = Blueprint("webhook", __name__)
 
@@ -17,5 +18,21 @@ def webhook_callback() :
         file_path.unlink()
     resposta_cotaçao = gen_quote_ia (reqs=lista_dados[3])
     lista_dados.append(resposta_cotaçao)
-    print (lista_dados)
+
+    payload = {
+        "email": lista_dados[0],
+        "pedidos": [
+            {
+                "empresa": lista_dados[1],
+                "numero": lista_dados[2],
+                "requisicao": lista_dados[3],
+                "resposta": lista_dados[6],
+                "status": "pendente"
+            }
+        ]
+    }
+
+    djangoUrl = 'http://127.0.0.1:8000/app_req_logs/criar_pedidos_de_quote/'
+    send = requests.post (djangoUrl, json=payload)
+    print("Resposta do Django:", send.status_code, send.json())
     return jsonify({"status": "ok"}), 200
