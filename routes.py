@@ -32,7 +32,7 @@ def webhook_callback() :
         ]
     }
 
-    djangoUrl = 'http://127.0.0.1:8000/app_req_logs/criar_pedidos_de_quote/'
+    djangoUrl = 'https://b33d112f4479.ngrok-free.app/app_req_logs/criar_pedidos_de_quote/'
     send = requests.post (djangoUrl, json=payload)
     print("Resposta do Django:", send.status_code, send.json())
     return jsonify({"status": "ok"}), 200
