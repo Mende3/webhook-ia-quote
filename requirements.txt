@@ -6,4 +6,5 @@ python-dotenv
 pandas
 openpyxl
 ipython
+mailersend
 azure-ai-inference==1.0.0b9
