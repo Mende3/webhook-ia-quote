@@ -17,14 +17,11 @@ def log_webhook(level, message, data=None):
 
 @webhook_bp.route("/webhookcallback/", methods=["POST", "OPTIONS"])
 def webhook_callback():
-    try:
-        log_webhook("INFO", "=== INÍCIO DO WEBHOOK ===")
-        
+    try:        
         if request.method == "OPTIONS":
             log_webhook("INFO", "Requisição OPTIONS (preflight) recebida")
             return jsonify({"status": "preflight ok"}), 200
         
-        # Log da requisição
         log_webhook("INFO", "Requisição POST recebida")
         log_webhook("DEBUG", "Headers", dict(request.headers))
         
@@ -40,11 +37,9 @@ def webhook_callback():
             "has_timestamp": "timestamp" in data
         })
         
-        # Processar dados (MANTIDO ORIGINAL)
         process_data(data=data)
         log_webhook("INFO", "Dados processados com sucesso")
         
-        # Gerar dados JSON (MANTIDO ORIGINAL)
         lista_dados = gen_data_json()
         log_webhook("INFO", "Dados JSON gerados", {
             "email": lista_dados[0],
@@ -53,7 +48,6 @@ def webhook_callback():
             "conteudo_tamanho": len(lista_dados[3])
         })
         
-        # Remover arquivo se existir (MANTIDO ORIGINAL)
         file_path = Path("clientDatas.json")
         if file_path.exists():
             file_path.unlink()
@@ -61,12 +55,10 @@ def webhook_callback():
         else:
             log_webhook("INFO", "Arquivo clientDatas.json não existia")
         
-        # Gerar cotação IA (MANTIDO ORIGINAL)
         resposta_cotacao = gen_quote_ia(reqs=lista_dados[3])
         lista_dados.append(resposta_cotacao)
         log_webhook("INFO", "Cotação IA adicionada aos dados")
         
-        # Preparar payload (MANTIDO ORIGINAL)
         payload = {
             "email": lista_dados[0],
             "pedidos": [
@@ -83,7 +75,6 @@ def webhook_callback():
         log_webhook("INFO", "Payload preparado para Django")
         log_webhook("DEBUG", "Payload completo", payload)
         
-        # Envio para Django (MANTIDO COMENTADO)
         log_webhook("INFO", "Envio para Django (comentado no código)")
         # djangoUrl = 'http://127.0.0.1:8000/app_req_logs/criar_pedidos_de_quote/'
         # send = requests.post(djangoUrl, json=payload)
