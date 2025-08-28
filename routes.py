@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from utils import process_data, gen_data_json, gen_quote_ia
+from utils import process_data, gen_data_json, gen_quote_ia, send_email
 from pathlib import Path
 import requests
 import traceback
@@ -81,6 +81,15 @@ def webhook_callback():
         # log_webhook("INFO", f"Resposta do Django: {send.status_code}")
         
         log_webhook("INFO", "=== WEBHOOK CONCLUÍDO COM SUCESSO ===")
+        print (lista_dados)
+        send_email (
+            "sucesso na requisição",
+            lista_dados[0],
+            lista_dados[1],
+            lista_dados[3],
+            lista_dados[4],
+            lista_dados[5]
+            )
         return jsonify({"status": "ok"}), 200
         
     except Exception as e:

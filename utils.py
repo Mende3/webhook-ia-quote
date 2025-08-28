@@ -5,7 +5,18 @@ from azure.ai.inference.models import SystemMessage, UserMessage
 from brain import client
 import logging
 from datetime import datetime
-#from mailersend import emails
+
+from mailersend import MailerSendClient, EmailBuilder
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv ()
+
+api_key_mailersend = os.getenv('API_KEY_MAILERSEND')
+ms = MailerSendClient (api_key_mailersend)
+domain = 'MS_fLx9MZ@test-r6ke4n1m809gon12.mlsender.net'
+meu_email = 'tquote265@gmail.com'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -112,5 +123,44 @@ def gen_quote_ia(reqs):
         raise
     
 
-def send_email (sms, to) :
-    pass
+def send_email(sms, to, company, req, date, time):
+
+    # corpo HTML mais apresentável
+    html_content = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.5;">
+            <h2>{sms}</h2>
+            <p><strong>Cliente:</strong> {company} ({to})</p>
+            <p><strong>Pedido de cotação:</strong><br>{req}</p>
+            <p><strong>Data/Hora:</strong> {date} {time}</p>
+            <hr>
+            <p style="color: gray; font-size: 0.9em;">
+                Este é um envio automático de cotações pelo sistema RCS.
+            </p>
+        </body>
+    </html>
+    """
+    
+    text_content = f"""
+    {sms}
+
+    Cliente: {company} ({to})
+    Pedido de cotação:
+    {req}
+
+    Data/Hora: {date} {time}
+
+    Geração automática de cotações - RCS
+    """
+
+    # construir e enviar email
+    email = (EmailBuilder()
+             .from_email(domain, "RCS Emails")
+             .to_many([{"email": meu_email, "name": "Cliente"}])
+             .subject(sms)
+             .html(html_content)
+             .text(text_content)
+             .build()
+             )
+    
+    ms.emails.send(email)
