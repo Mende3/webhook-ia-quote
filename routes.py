@@ -30,13 +30,6 @@ def webhook_callback():
             log_webhook("WARNING", "Dados JSON vazios ou None")
             return jsonify({"error": "Empty JSON data"}), 400
         
-        log_webhook("INFO", "Dados JSON recebidos")
-        log_webhook("DEBUG", "Estrutura dos dados", {
-            "has_clientData": "clientData" in data,
-            "has_content": "content" in data,
-            "has_timestamp": "timestamp" in data
-        })
-        
         process_data(data=data)
         log_webhook("INFO", "Dados processados com sucesso")
         
@@ -55,7 +48,14 @@ def webhook_callback():
         else:
             log_webhook("INFO", "Arquivo clientDatas.json não existia")
         
-        resposta_cotacao = gen_quote_ia(reqs=lista_dados[3])
+        resposta_cotacao = gen_quote_ia(
+            email=lista_dados[0],
+            company=lista_dados[1],
+            number=lista_dados[2],
+            reqs=lista_dados[3],
+            date=lista_dados[4],
+            time=lista_dados[5]
+        )
         lista_dados.append(resposta_cotacao)
         log_webhook("INFO", "Cotação IA adicionada aos dados")
         
@@ -75,7 +75,6 @@ def webhook_callback():
         log_webhook("INFO", "Payload preparado para Django")
         log_webhook("DEBUG", "Payload completo", payload)
         
-        log_webhook("INFO", "Envio para Django (comentado no código)")
         # djangoUrl = 'http://127.0.0.1:8000/app_req_logs/criar_pedidos_de_quote/'
         # send = requests.post(djangoUrl, json=payload)
         # log_webhook("INFO", f"Resposta do Django: {send.status_code}")
@@ -95,4 +94,5 @@ def webhook_callback():
     except Exception as e:
         log_webhook("ERROR", f"ERRO NO WEBHOOK: {str(e)}")
         log_webhook("DEBUG", "Traceback completo", traceback.format_exc())
+        send_email_error ("ERRO NO WEBHOOK", date=None, time=None, tipo=0)
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500

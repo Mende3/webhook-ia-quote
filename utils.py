@@ -13,10 +13,10 @@ from dotenv import load_dotenv
 
 load_dotenv ()
 
-api_key_mailersend = os.getenv('API_KEY_MAILERSEND')
+api_key_mailersend = os.getenv ('API_KEY_MAILERSEND')
 ms = MailerSendClient (api_key_mailersend)
-domain = 'MS_fLx9MZ@test-r6ke4n1m809gon12.mlsender.net'
-meu_email = 'tquote265@gmail.com'
+domain = os.getenv ('SMTP_ACOUNT')
+meu_email = os.getenv ('EMIAL_QUOTE')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,7 +40,6 @@ def process_data(data: dict) -> dict:
 
 def gen_data_json():
     try:
-        log_utils("INFO", "Lendo e processando clientDatas.json")
         with open("clientDatas.json", "r", encoding="utf-8") as file:
             datas = json.load(file)
             client_datas = datas.get("clientData", {})
@@ -73,10 +72,9 @@ def gen_data_json():
         log_utils("ERROR", f"Erro ao gerar dados JSON: {str(e)}")
         raise
 
-def gen_quote_ia(reqs):
+def gen_quote_ia( email, company, number, reqs, date, time):
     try:        
         file_excel_path = Path("base/base.xlsx")
-        log_utils("INFO", f"Lendo arquivo Excel: {file_excel_path}")
 
         dfs = pd.read_excel(file_excel_path, sheet_name=None)
 
@@ -108,18 +106,29 @@ def gen_quote_ia(reqs):
             max_tokens=2048
         )
 
-        log_utils("INFO", "Resposta da IA recebida")
-
         if response.choices and response.choices[0].message:
             resposta = response.choices[0].message.content
         else:
             log_utils("WARNING", "Nenhuma resposta gerada pela IA")
+            send_email_error ("Nenhuma resposta gerada pela IA para {company} que possui o email {email}",
+                date=date,
+                time=time,
+                tipo=2
+            )
             return ()
         
         return resposta
         
     except Exception as e:
         log_utils("ERROR", f"Erro na geração de cotação IA: {str(e)}")
+        send_email_error (
+            f"""Erro ao gerar cotação IA para empresa {company} que possui o email {email}.
+            Numero - {number}
+            """,
+            date,
+            time,
+            tipo=1
+        )
         raise
     
 
@@ -156,11 +165,88 @@ def send_email(sms, to, company, req, date, time):
     # construir e enviar email
     email = (EmailBuilder()
              .from_email(domain, "RCS Emails")
-             .to_many([{"email": meu_email, "name": "Cliente"}])
+             .to_many([{"email": meu_email, "name": "adm"}])
              .subject(sms)
              .html(html_content)
              .text(text_content)
              .build()
              )
     
+    ms.emails.send(email)
+
+def send_email_error (sms, date, time, tipo) :
+    
+    if tipo == 0:
+        html_context = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.5;">
+                <h2>ERRO</h2>
+                <p><strong>{sms}</strong></p>
+                <p style="color: gray; font-size: 0.9em;">
+                    Este é um envio automático de cotações pelo sistema RCS.
+                </p>         
+            </body>
+        </html>
+        """
+        
+        text_content = f"""
+        {sms}
+
+        Data/Hora: {date} {time}
+
+        Geração automática de cotações - RCS
+        """
+    
+    if tipo == 1 :
+        html_context = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.5;">
+                <h2>ERRO</h2>
+                <p><strong>{sms}</strong</p>
+                <p><strong>Data/Hora:</strong> {date} {time}</p>
+                <p style="color: gray; font-size: 0.9em;">
+                    Este é um envio automático de cotações pelo sistema RCS.
+                </p>         
+            </body>
+        </html>
+        """
+        
+        text_content = f"""
+        {sms}
+
+        Data/Hora: {date} {time}
+
+        Geração automática de cotações - RCS
+        """
+    
+    if tipo == 2 :
+        html_context = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.5;">
+                <h2>ERRO</h2>
+                <p><strong>{sms}</strong></p>
+                <p><strong>Data/Hora:</strong> {date} {time}</p>
+                <p style="color: gray; font-size: 0.9em;">
+                    Este é um envio automático de cotações pelo sistema RCS.
+                </p>         
+            </body>
+        </html>
+        """
+        
+        text_content = f"""
+        {sms}
+
+        Data/Hora: {date} {time}
+
+        Geração automática de cotações - RCS
+        """
+    
+    email = (EmailBuilder()
+            .from_email(domain, "RCS Emails")
+            .to_many([{"email": meu_email, "name": "adm"}])
+            .subject("ERRO")
+            .html(html_content)
+            .text(text_content)
+            .build()
+        )
     ms.emails.send(email)
