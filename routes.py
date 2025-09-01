@@ -67,6 +67,8 @@ def webhook_callback():
                     "numero": lista_dados[2],
                     "requisicao": lista_dados[3],
                     "resposta": lista_dados[6],
+                    "data": lista_dados[4],
+                    "hora": lista_dados[5],
                     "status": "pendente"
                 }
             ]
@@ -75,21 +77,21 @@ def webhook_callback():
         log_webhook("INFO", "Payload preparado para Django")
         log_webhook("DEBUG", "Payload completo", payload)
         
-        # djangoUrl = 'http://127.0.0.1:8000/app_req_logs/criar_pedidos_de_quote/'
-        # send = requests.post(djangoUrl, json=payload)
-        # log_webhook("INFO", f"Resposta do Django: {send.status_code}")
+        djangoUrl = 'https://rcs-hackthon-django.onrender.com/app_req_logs/criar_pedidos_de_quote/'
+        send = requests.post(djangoUrl, json=payload)
+        log_webhook("INFO", f"Resposta do Django: {send.status_code}")
         
-        log_webhook("INFO", "=== WEBHOOK CONCLUÍDO COM SUCESSO ===")
-        print (lista_dados)
-        send_email (
-            "sucesso na requisição",
-            lista_dados[0],
-            lista_dados[1],
-            lista_dados[3],
-            lista_dados[4],
-            lista_dados[5]
-            )
-        return jsonify({"status": "ok"}), 200
+        if send.status_code == 201 :
+            log_webhook("INFO", "=== WEBHOOK CONCLUÍDO COM SUCESSO ===")
+            send_email (
+                "sucesso na requisição",
+                lista_dados[0],
+                lista_dados[1],
+                lista_dados[3],
+                lista_dados[4],
+                lista_dados[5]
+                )
+            return jsonify({"status": "ok"}), 200
         
     except Exception as e:
         log_webhook("ERROR", f"ERRO NO WEBHOOK: {str(e)}")
